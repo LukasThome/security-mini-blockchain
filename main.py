@@ -1,21 +1,12 @@
-"""
-Mini-Blockchain Simétrica com Autenticação de Usuário
-Disciplina: Segurança da Informação — UFSC
-
-Uso:
-  python3 main.py
-"""
 import dataclasses
-from autenticacao import cadastrar_usuario, autenticar, calcular_totp, gerar_segredo_totp
-from blockchain import adicionar_bloco, validar_cadeia, ler_blocos_usuario, hash_bloco, HASH_GENESIS
+from autenticacao import cadastrar_usuario, autenticar
+from blockchain import adicionar_bloco, validar_cadeia, ler_blocos_usuario
 from armazenamento import salvar_usuario, carregar_usuario, salvar_blockchain, carregar_blockchain
-
 
 @dataclasses.dataclass
 class Sessao:
     nome_usuario: str
     chave_sessao: bytes
-
 
 def _menu_principal() -> str:
     print("\n=== Mini-Blockchain ===")
@@ -27,7 +18,6 @@ def _menu_principal() -> str:
     print("6. Listar todos os blocos")
     print("0. Sair")
     return input("Opção: ").strip()
-
 
 def _cadastrar():
     nome = input("Username: ").strip()
@@ -41,9 +31,7 @@ def _cadastrar():
     registro, segredo_totp = cadastrar_usuario(nome, senha)
     salvar_usuario(registro)
     print(f"\nCadastro realizado!")
-    print(f"Segredo TOTP (configure no autenticador): {segredo_totp.hex()}")
-    print("(Em produção, este segredo seria exibido como QR code)")
-
+    print(f"Segredo TOTP: {segredo_totp.hex()}")
 
 def _login() -> Sessao | None:
     nome = input("Username: ").strip()
@@ -60,7 +48,6 @@ def _login() -> Sessao | None:
     print(f"Login bem-sucedido! Bem-vindo, {nome}.")
     return Sessao(nome_usuario=nome, chave_sessao=chave)
 
-
 def _adicionar_bloco(sessao: Sessao):
     cadeia = carregar_blockchain()
     dados = input("Dados do bloco: ").strip()
@@ -69,8 +56,7 @@ def _adicionar_bloco(sessao: Sessao):
         return
     nova_cadeia = adicionar_bloco(cadeia, dados, sessao.nome_usuario, sessao.chave_sessao)
     salvar_blockchain(nova_cadeia)
-    print(f"Bloco adicionado! Total de blocos: {len(nova_cadeia)}")
-
+    print(f"Bloco adicionado! Total: {len(nova_cadeia)}")
 
 def _ler_meus_blocos(sessao: Sessao):
     cadeia = carregar_blockchain()
@@ -85,14 +71,12 @@ def _ler_meus_blocos(sessao: Sessao):
         else:
             print(f"  [{i}] {dado}")
 
-
 def _validar_cadeia():
     cadeia = carregar_blockchain()
     if validar_cadeia(cadeia):
         print(f"Cadeia válida. ({len(cadeia)} blocos)")
     else:
-        print("CADEIA INVÁLIDA — integridade comprometida!")
-
+        print("CADEIA INVÁLIDA!")
 
 def _listar_blocos():
     cadeia = carregar_blockchain()
@@ -102,7 +86,6 @@ def _listar_blocos():
     print(f"\nTodos os blocos ({len(cadeia)}):")
     for i, bloco in enumerate(cadeia):
         print(f"  [{i}] dono={bloco['dono']}  hash_ant={bloco['hash_anterior'][:12]}...")
-
 
 def main():
     sessao = None
@@ -125,7 +108,6 @@ def main():
             _validar_cadeia()
         elif opcao == "6":
             _listar_blocos()
-
 
 if __name__ == "__main__":
     main()
